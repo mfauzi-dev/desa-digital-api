@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\SocialAssistanceRecipientCreateRequest;
 use App\Http\Requests\SocialAssistanceRecipientUpdate;
+use App\Http\Requests\SocialAssistanceUpdateRequest;
 use App\Http\Resources\SocialAssistanceRecipientResource;
 use App\Models\SocialAssistanceRecipient;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class SocialAssistanceRecipientController extends Controller
             $search = $request->search;
             $size = $request->input('size', 10);
 
-            $query = SocialAssistanceRecipient::query();
+            $query = SocialAssistanceRecipient::with('socialAssistance', 'headOfFamily');
 
             if ($search) {
                 $query->whereHas('headOfFamily', function ($headOfFamilyQuery) use ($search) {
@@ -121,6 +122,72 @@ class SocialAssistanceRecipientController extends Controller
                 new SocialAssistanceRecipientResource($socialAssistanceRecipient),
                 200
             );
+        } catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(
+                false, 
+                $e->getMessage(), 
+                null, 
+                500);
+        }
+    }
+
+    public function update(SocialAssistanceUpdateRequest $request, $id)
+    {
+        try {
+            $socialAssistanceRecipient = SocialAssistanceRecipient::where('id', $id)->first();
+
+            if(!$socialAssistanceRecipient) {
+                return ResponseHelper::jsonResponse(
+                    false, 
+                    'Data Penerima Bantuan Sosial Tidak Ditemukan',
+                    null,
+                    404);
+            }
+
+            $socialAssistanceRecipient->social_assistance_id = $request->social_assistance_id;
+            $socialAssistanceRecipient->head_of_family_id = $request->head_of_family_id;
+            $socialAssistanceRecipient->amount = $request->amount;
+            $socialAssistanceRecipient->reason = $request->reason;
+            $socialAssistanceRecipient->bank = $request->bank;
+            $socialAssistanceRecipient->account_number = $request->account_number;
+            $socialAssistanceRecipient->proof = $request->proof;
+            $socialAssistanceRecipient->status = $request->status;
+
+            $socialAssistanceRecipient->save();
+
+             return ResponseHelper::jsonResponse(
+                true, 
+                'Data Penerima Bantuan Sosial Berhasil Diupdate', 
+                new SocialAssistanceRecipientResource($socialAssistanceRecipient), 
+                200);
+        } catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(
+                false, 
+                $e->getMessage(), 
+                null, 
+                500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $socialAssistanceRecipient = SocialAssistanceRecipient::where('id', $id)->first();
+
+            if(!$socialAssistanceRecipient) {
+                return ResponseHelper::jsonResponse(
+                    false, 
+                    'Data Penerima Bantuan Sosial Tidak Ditemukan',
+                    null,
+                    404);
+            }
+
+            $socialAssistanceRecipient->delete();
+            return ResponseHelper::jsonResponse(
+                true, 
+                'Data Penerima Bantuan Sosial Berhasil Dihapus', 
+                new SocialAssistanceRecipientResource($socialAssistanceRecipient), 
+                200);
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(
                 false, 
