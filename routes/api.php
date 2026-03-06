@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\FamilyMemberController;
 use App\Http\Controllers\HeadOfFamilyController;
 use App\Http\Controllers\SocialAssistanceController;
@@ -16,3 +17,6 @@ Route::apiResource('family-member', FamilyMemberController::class);
 Route::apiResource('social-assistance', SocialAssistanceController::class);
 
 Route::apiResource('social-assistance-recipient', SocialAssistanceRecipientController::class);
+
+Route::apiResource('event', EventController::class);
+
